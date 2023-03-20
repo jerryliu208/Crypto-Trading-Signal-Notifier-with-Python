@@ -1,3 +1,6 @@
+# Api Config
+app/main/config/api_config.py
+
 # Editors
 .vscode/
 .idea/
