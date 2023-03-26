@@ -45,11 +45,12 @@ class MarketService():
         subscribers_file_name = ""
         try:
             if is_test:
-                subscribers_file_name = FileHandlerUtil.readline_to_arr(path.join(static_resource_path, "developers.txt"))
+                subscribers_file_name = "developers.txt"
             else:
-                subscribers_file_name = FileHandlerUtil.readline_to_arr(path.join(static_resource_path, "subscribers.txt"))
+                subscribers_file_name = "subscribers.txt"
         except Exception as e:
             raise Exception("讀取訂閱者列表檔案發生錯誤：" + str(e))
+        self.subscribers = FileHandlerUtil.readline_to_arr(path.join(static_resource_path, subscribers_file_name))
         
     """
     check_signal_and_send_email()
