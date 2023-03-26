@@ -1,5 +1,11 @@
-# Api Config
-app/main/config/api_config.py
+# Application Config
+app/main/config/application_config.py
+
+#static file
+app/main/static/*.txt
+
+#log file
+app/main/static/log_file/*
 
 # Editors
 .vscode/
@@ -16,7 +22,7 @@ Thumbs.db
 
 # Source for the following rules: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__
 *.py[cod]
 *$py.class
 

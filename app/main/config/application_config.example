@@ -1,0 +1,18 @@
+#to config the application, please modify extension of this file to ".py"!
+
+class ApplicationConfig():
+    #static resource path
+    static_resource_path = 'app/main/static/'
+
+    #Test mode or not
+    is_test = True
+
+    #Binance REST API
+    api_key = '{{your api key}}'
+    secret_key = '{{your secret key}}'
+    
+    #SMTP email sender
+    smtp_host = 'smtp.gmail.com'    #default host is gmail host
+    smtp_port = 587                 #default port is gmail port
+    smtp_username = '{{your user name}}'
+    smtp_password = '{{your password}}'
