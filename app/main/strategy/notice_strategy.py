@@ -155,20 +155,22 @@ class NoticeStrategy():
         high_prices = [] #最高價
         low_prices = [] #最低價
         close_prices = [] #收盤價
-        #try:
-        # 初始化 Binance 客戶端
-        exchange = ccxt.binanceus({
-            'enableRateLimit': True,  # 啟用速率限制
-        })
-        # 透過Binance 客戶端獲取 K 線數據
-        klines = exchange.fetch_ohlcv(self.symbol, self.interval, limit = 50, params = {'endTime': int(self.end_time)*1000})
-        # 從K線數據中分別取出 最高價, 最低價, 收盤價
-        for kline in klines:
-            high_prices.append(float(kline[2]))
-            low_prices.append(float(kline[3]))
-            close_prices.append(float(kline[4]))
-        # except Exception as e:
-        #     raise Exception("獲取/分析K線數據錯誤："+str(e))
+        try:
+            # 初始化 Binance 客戶端
+            print("a")
+            exchange = ccxt.binanceus({
+                'enableRateLimit': True,  # 啟用速率限制
+            })
+            print("b")
+            # 透過Binance 客戶端獲取 K 線數據
+            klines = exchange.fetch_ohlcv(self.symbol, self.interval, limit = 50, params = {'endTime': int(self.end_time)*1000})
+            # 從K線數據中分別取出 最高價, 最低價, 收盤價
+            for kline in klines:
+                high_prices.append(float(kline[2]))
+                low_prices.append(float(kline[3]))
+                close_prices.append(float(kline[4]))
+        except Exception as e:
+            raise Exception("獲取/分析K線數據錯誤："+str(e))
         
         # 透過talib提供的函示取得 KD 指標和 MACD 指標
         slow_k, slow_d = talib.STOCH(np.array(high_prices), np.array(low_prices), np.array(close_prices), 
