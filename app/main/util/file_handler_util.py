@@ -18,7 +18,7 @@ class FileHandlerUtil():
     def create_file_and_write_text(path, contents):
         file_path = os.path.join(ApplicationConfig.static_resource_path, path)
         mode = 'w'
-        if len(FileHandlerUtil.readline_to_arr(file_path)) > 0:
+        if os.path.exists(file_path):
             mode = 'a'
         f = open(file_path, mode)
         for content in contents:
