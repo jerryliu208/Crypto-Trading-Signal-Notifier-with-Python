@@ -162,6 +162,7 @@ class NoticeStrategy():
             })
             # 透過Binance 客戶端獲取 K 線數據
             klines = exchange.fetch_ohlcv(self.symbol, self.interval, limit = 50, params = {'end': int(self.end_time)*1000})
+            print(klines)
             # 從K線數據中分別取出 最高價, 最低價, 收盤價
             for kline in klines:
                 high_prices.append(float(kline[2]))
