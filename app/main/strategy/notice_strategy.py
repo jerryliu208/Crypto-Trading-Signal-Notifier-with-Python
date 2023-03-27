@@ -26,9 +26,9 @@ class NoticeStrategy():
     [date] (String):     指定日期，不傳默認為今日日期 ex: "2022/03/14"
     [is_test] (Boolean): 是否為測試環境，不傳默認為否
     """
-    def __init__(self, symbol, interval, date = None, is_test = False):
+    def __init__(self, symbol, interval, date = None):
         #是否為測試模式
-        self.is_test = is_test
+        self.is_test = ApplicationConfig.is_test
         #欲分析行情之合約別
         self.symbol = symbol
         #時間週期
@@ -41,14 +41,14 @@ class NoticeStrategy():
             except Exception as e:
                 raise Exception("日期字串轉換為timestamp發生錯誤："+str(e))
         else:
-            self.end_time = calendar.timegm(time.gmtime())
+            self.end_time = None
         #TG機器人
         self.bot = TelegramBot.bot
         #從靜態資源中讀取訂閱者名單
         static_resource_path = ApplicationConfig.static_resource_path
         subscribers_file_name = ""
         try:
-            if is_test:
+            if self.is_test:
                 subscribers_file_name = StaticConstant.TELEGRAM_DEVELOPERS_FILE_NAME
             else:
                 subscribers_file_name = StaticConstant.TELEGRAM_SUBSCRIBERS_FILE_NAME
@@ -68,6 +68,8 @@ class NoticeStrategy():
     signal(Integer): 訊號 -> [ 1=買入訊號, -1=賣出訊號, 0=持倉觀望 ]
     """
     def check_signal_and_notify(self):
+        
+        
         #取得訊號為何
         signal = 0
         try:
@@ -93,38 +95,44 @@ class NoticeStrategy():
     signal(Integer): 訊號 -> [ 1=買入訊號, -1=賣出訊號, 0=持倉觀望 ]
     """
     def send_notification_to_subscribers(self, signal):
+        date_time_str = ""
+        try:
+                date_time_str = str(datetime.datetime.fromtimestamp(calendar.timegm(time.gmtime())))
+                if self.end_time != None:
+                    date_time_str = str(datetime.datetime.fromtimestamp(self.end_time))
+        except Exception as e:
+            raise Exception("timestamp轉換至datetime發生錯誤："+str(e))
         #若非觀望訊號，則需要發送通知給訂閱者們
         if signal != 0: 
             subject = "" #標題
             message = "" #內文
-            date_str = "" #日期字串
             signal_str = "" #訊號的中文字串
-            try:
-                date_str = str(datetime.date.fromtimestamp(self.end_time))
-            except Exception as e:
-                raise Exception("timestamp轉換至date發生錯誤："+str(e))
             #買入訊號
             if signal > 0:
                 signal_str = "買入訊號"
                 subject = 'Buy Signal for ' + self.symbol
-                message = 'On '+date_str+', the comprehensive technical analysis of '+ self.symbol +' has formed a buy signal! Try to place the long position for ' + self.symbol
+                message = 'On '+ str(date_time_str) +', the comprehensive technical analysis of '+ self.symbol +' has formed a buy signal! Try to place the long position for ' + self.symbol
             #賣出訊號
             if signal < 0:
                 signal_str = "賣出訊號"
                 subject = 'Sell Signal for ' + self.symbol
-                message = 'On '+date_str+', the comprehensive technical analysis of '+ self.symbol +' has formed a sell signal! Try to close the long position for ' + self.symbol
+                message = 'On '+ str(date_time_str) +', the comprehensive technical analysis of '+ self.symbol +' has formed a sell signal! Try to close the long position for ' + self.symbol
             try:
                 notify_msg = subject + "\n" + message
                 for subscriber in set(self.subscribers):
                     self.bot.send_message(subscriber, notify_msg)
-                    LogUtil.write_daily_log_by_date(["成功發送"+ self.symbol + "(" + self.interval + ")" + "在" + str(datetime.datetime.fromtimestamp(self.end_time)) + "的" + signal_str + "通知訂閱者：" + str(subscriber)])
+                    LogUtil.write_daily_log_by_date(["成功發送"+ self.symbol + "(" + self.interval + ")" + "在" + str(date_time_str) + "的" + signal_str + "通知訂閱者：" + str(subscriber)])
             except Exception as e:
                 err_msg = "發送通知錯誤: "+str(e)
                 #寄通知發生錯誤不中止程式，只需寫log即可
                 LogUtil.write_error_log_by_date([err_msg])
         else:
-            LogUtil.write_daily_log_by_date([self.symbol + "(" + self.interval + ")" + "在" + str(datetime.datetime.fromtimestamp(self.end_time)) +"未出現明顯買入賣出訊號，沈住氣，再等等！機會總會降臨的！"])
-            pass
+            no_signal_msg = self.symbol + "(" + self.interval + ")" + "在" + str(date_time_str) +"未出現明顯買入賣出訊號，沈住氣，再等等！機會總會降臨的！"
+            if self.is_test:
+                for subscriber in set(self.subscribers):
+                    print(str(subscriber))
+                    self.bot.send_message(subscriber, no_signal_msg)
+            LogUtil.write_daily_log_by_date([no_signal_msg])
             
     """
     signal_analyze_using_kd_macd()
@@ -153,26 +161,26 @@ class NoticeStrategy():
     return Integer: [ 1=買入訊號, -1=賣出訊號, 0=持倉觀望 ]
     """
     def signal_analyze_using_kd_macd(self):
+        end_time = 0
+        if self.end_time != None:
+            end_time = self.end_time
+        else:
+            end_time = calendar.timegm(time.gmtime())
         #先取得近期的最高價、最低價、收盤價，後續拿來做指標的計算
         high_prices = [] #最高價
         low_prices = [] #最低價
         close_prices = [] #收盤價
         try:
-            # # 初始化 Binance 客戶端
-            # exchange = ccxt.binanceus({
-            #     'enableRateLimit': True,  # 啟用速率限制
-            # })
-            # # 透過Binance 客戶端獲取 K 線數據
-            # klines = exchange.fetch_ohlcv(self.symbol, self.interval, limit = 50, params = {'endTime': int(self.end_time)*1000})
+            # 透過Binance API獲取 K 線數據
             url = "https://api.binance.us/api/v3/klines"
-            # 设置请求参数
+            # 設置請求參數
             params = {
                 "symbol": self.symbol,
                 "interval": self.interval,
                 "limit": 50,
-                "endTime": int(self.end_time)*1000
+                "endTime": int(end_time)*1000
             }
-            # 发送 GET 请求
+            # 發送GET請求
             response = requests.get(url, params=params).json()
             klines = json.loads(str(response).replace("'", '"'))
             # 從K線數據中分別取出 最高價, 最低價, 收盤價

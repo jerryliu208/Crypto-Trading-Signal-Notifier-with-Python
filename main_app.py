@@ -31,7 +31,4 @@ def test():
     t1.join()
     
 if __name__ == "__main__":
-    if ApplicationConfig.is_test:
-        test()
-    else:
-        main()
+    main()
