@@ -16,10 +16,10 @@ def main():
     polling_thread = Thread(target = bot_polling)
     polling_thread.start()
     try:
-        notice_strategy = NoticeStrategy("BTCUSD_PERP", "1d")
+        notice_strategy = NoticeStrategy("BTCUSDT", "1d")
         while True:
             notice_strategy.check_signal_and_notify()
-            time.sleep(5)
+            time.sleep(60)
     except Exception as e:
         LogUtil.write_error_log_by_date([str(e)])
     polling_thread.join()

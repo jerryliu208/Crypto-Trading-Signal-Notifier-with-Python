@@ -14,8 +14,8 @@ class NoticeStrategyTest():
     
     def check_signal_and_send_email_test(self):
         try:
-            buy_signal = NoticeStrategy("BTCUSD_PERP", "1d", "2023/03/11", True).check_signal_and_notify()
-            sell_signal = NoticeStrategy("BTCUSD_PERP", "1d", "2023/01/27", True).check_signal_and_notify()
+            buy_signal = NoticeStrategy("BTCUSDT", "1d", "2023/03/11", True).check_signal_and_notify()
+            sell_signal = NoticeStrategy("BTCUSDT", "1d", "2023/01/27", True).check_signal_and_notify()
             if buy_signal != 1 or sell_signal != -1:
                 print("test failed...")
                 return False

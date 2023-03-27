@@ -7,8 +7,7 @@ from app.main.util.log_util import LogUtil
 # package of comprehensive technical analysis
 import talib
 import numpy as np
-# official package from Binance
-from binance.cm_futures import CMFutures
+import ccxt
 
 import calendar
 import time
@@ -116,13 +115,13 @@ class NoticeStrategy():
                 notify_msg = subject + "\n" + message
                 for subscriber in set(self.subscribers):
                     self.bot.send_message(subscriber, notify_msg)
-                    LogUtil.write_daily_log_by_date(["成功發送"+ self.symbol + signal_str + "通知訂閱者：" + str(subscriber)])
+                    LogUtil.write_daily_log_by_date(["成功發送"+ self.symbol + "(" + self.interval + ")" + "在" + str(datetime.datetime.fromtimestamp(self.end_time)) + "的" + signal_str + "通知訂閱者：" + str(subscriber)])
             except Exception as e:
                 err_msg = "發送通知錯誤: "+str(e)
                 #寄通知發生錯誤不中止程式，只需寫log即可
                 LogUtil.write_error_log_by_date([err_msg])
         else:
-            LogUtil.write_daily_log_by_date([self.symbol + "目前未出現明顯買入賣出訊號，沈住氣，再等等！機會總會降臨的！"])
+            LogUtil.write_daily_log_by_date([self.symbol + "(" + self.interval + ")" + "在" + str(datetime.datetime.fromtimestamp(self.end_time)) +"未出現明顯買入賣出訊號，沈住氣，再等等！機會總會降臨的！"])
             pass
             
     """
@@ -158,9 +157,11 @@ class NoticeStrategy():
         close_prices = [] #收盤價
         try:
             # 初始化 Binance 客戶端
-            client = CMFutures()
+            exchange = ccxt.binance({
+                'enableRateLimit': True,  # 啟用速率限制
+            })
             # 透過Binance 客戶端獲取 K 線數據
-            klines = client.klines(self.symbol, self.interval, endTime = int(self.end_time)*1000, limit = 50)
+            klines = exchange.fetch_ohlcv(self.symbol, self.interval, limit = 50, params = {'endTime': int(self.end_time)*1000})
             # 從K線數據中分別取出 最高價, 最低價, 收盤價
             for kline in klines:
                 high_prices.append(float(kline[2]))
