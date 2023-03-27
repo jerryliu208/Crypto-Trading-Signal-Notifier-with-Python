@@ -11,8 +11,5 @@ class ApplicationConfig():
     api_key = '{{your api key}}'
     secret_key = '{{your secret key}}'
     
-    #SMTP email sender
-    smtp_host = 'smtp.gmail.com'    #default host is gmail host
-    smtp_port = 587                 #default port is gmail port
-    smtp_username = '{{your user name}}'
-    smtp_password = '{{your password}}'
+    #Telegram Bot API key
+    tg_bot_api_key = '{{your tg bot api key}}'

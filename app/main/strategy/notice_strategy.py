@@ -1,5 +1,6 @@
 from app.main.config.application_config import ApplicationConfig
-from app.main.util.email_util import EmailUtil
+from app.main.constant.static_constant import StaticConstant
+from app.main.bot.telegram_bot import TelegramBot
 from app.main.util.file_handler_util import FileHandlerUtil
 from app.main.util.log_util import LogUtil
 
@@ -14,7 +15,7 @@ import time
 import datetime
 import os.path as path
 
-class MarketService():
+class NoticeStrategy():
     """
     Constructor
     
@@ -40,30 +41,32 @@ class MarketService():
                 raise Exception("日期字串轉換為timestamp發生錯誤："+str(e))
         else:
             self.end_time = calendar.timegm(time.gmtime())
+        #TG機器人
+        self.bot = TelegramBot.bot
         #從靜態資源中讀取訂閱者名單
         static_resource_path = ApplicationConfig.static_resource_path
         subscribers_file_name = ""
         try:
             if is_test:
-                subscribers_file_name = "developers.txt"
+                subscribers_file_name = StaticConstant.TELEGRAM_DEVELOPERS_FILE_NAME
             else:
-                subscribers_file_name = "subscribers.txt"
+                subscribers_file_name = StaticConstant.TELEGRAM_SUBSCRIBERS_FILE_NAME
+            self.subscribers = FileHandlerUtil.readline_to_arr(path.join(static_resource_path, subscribers_file_name))
         except Exception as e:
             raise Exception("讀取訂閱者列表檔案發生錯誤：" + str(e))
-        self.subscribers = FileHandlerUtil.readline_to_arr(path.join(static_resource_path, subscribers_file_name))
         
     """
-    check_signal_and_send_email()
+    check_signal_and_notify()
     
     description: 
-    取得訊號後，若適合買入或賣出則發送email給名單中的所有人
+    取得訊號後，若適合買入或賣出則使用機器人發送通知給名單中的所有人
     
     @param
     
     @return
     signal(Integer): 訊號 -> [ 1=買入訊號, -1=賣出訊號, 0=持倉觀望 ]
     """
-    def check_signal_and_send_email(self):
+    def check_signal_and_notify(self):
         #取得訊號為何
         signal = 0
         try:
@@ -71,53 +74,55 @@ class MarketService():
         except Exception as e:
             raise Exception(str(e))
         
-        #發送email通知訂閱者們
+        #發送通知給訂閱者們
         try:
-            self.send_email_to_subscribers(signal)
+            self.send_notification_to_subscribers(signal)
         except Exception as e:
             raise Exception(str(e))
         
         return signal
     
     """
-    send_email_to_subscribers()
+    send_notification_to_subscribers()
     
     description: 
-    若為買出或賣出訊號，則發送email給訂閱者們
+    若為買出或賣出訊號，則發送通知給訂閱者們
     
     @param
     signal(Integer): 訊號 -> [ 1=買入訊號, -1=賣出訊號, 0=持倉觀望 ]
     """
-    def send_email_to_subscribers(self, signal):
-        #若非觀望訊號，則需要發送email通知訂閱者們
+    def send_notification_to_subscribers(self, signal):
+        #若非觀望訊號，則需要發送通知給訂閱者們
         if signal != 0: 
             subject = "" #標題
             message = "" #內文
             date_str = "" #日期字串
+            signal_str = "" #訊號的中文字串
             try:
                 date_str = str(datetime.date.fromtimestamp(self.end_time))
             except Exception as e:
                 raise Exception("timestamp轉換至date發生錯誤："+str(e))
             #買入訊號
             if signal > 0:
+                signal_str = "買入訊號"
                 subject = 'Buy Signal for ' + self.symbol
                 message = 'On '+date_str+', the comprehensive technical analysis of '+ self.symbol +' has formed a buy signal! Try to place the long position for ' + self.symbol
             #賣出訊號
             if signal < 0:
+                signal_str = "賣出訊號"
                 subject = 'Sell Signal for ' + self.symbol
                 message = 'On '+date_str+', the comprehensive technical analysis of '+ self.symbol +' has formed a sell signal! Try to close the long position for ' + self.symbol
             try:
-                EmailUtil.batch_send_email(subject, message, self.subscribers)
-                signal_str = ""
-                if signal > 0: signal_str = "買入訊號" 
-                else: signal_str = "賣出訊號"
-                LogUtil.write_daily_log_by_date(["成功發送"+ self.symbol + signal_str + "email給以下訂閱者：" + str(self.subscribers)])
+                notify_msg = subject + "\n" + message
+                for subscriber in set(self.subscribers):
+                    self.bot.send_message(subscriber, notify_msg)
+                    LogUtil.write_daily_log_by_date(["成功發送"+ self.symbol + signal_str + "通知訂閱者：" + str(subscriber)])
             except Exception as e:
-                err_msg = "發送Email錯誤: "+str(e)
-                #寄email發生錯誤不中止程式，只需寫log即可
+                err_msg = "發送通知錯誤: "+str(e)
+                #寄通知發生錯誤不中止程式，只需寫log即可
                 LogUtil.write_error_log_by_date([err_msg])
         else:
-            LogUtil.write_daily_log_by_date(["今天是" + self.symbol + "平靜的一天，沈住氣，再等等！機會總會降臨的！"])
+            LogUtil.write_daily_log_by_date([self.symbol + "目前未出現明顯買入賣出訊號，沈住氣，再等等！機會總會降臨的！"])
             pass
             
     """

@@ -1,8 +1,8 @@
 from app.main.util.log_util import LogUtil
 #service
-from app.main.service.market_service import MarketService
+from app.main.strategy.notice_strategy import NoticeStrategy
 
-class MarketServiceTest():
+class NoticeStrategyTest():
     def __init__(self):
         pass
     
@@ -14,8 +14,8 @@ class MarketServiceTest():
     
     def check_signal_and_send_email_test(self):
         try:
-            buy_signal = MarketService("BTCUSD_PERP", "1d", "2023/03/11", True).check_signal_and_send_email()
-            sell_signal = MarketService("BTCUSD_PERP", "1d", "2023/01/27", True).check_signal_and_send_email()
+            buy_signal = NoticeStrategy("BTCUSD_PERP", "1d", "2023/03/11", True).check_signal_and_notify()
+            sell_signal = NoticeStrategy("BTCUSD_PERP", "1d", "2023/01/27", True).check_signal_and_notify()
             if buy_signal != 1 or sell_signal != -1:
                 print("test failed...")
                 return False
