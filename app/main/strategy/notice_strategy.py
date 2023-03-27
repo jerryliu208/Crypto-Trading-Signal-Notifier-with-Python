@@ -9,6 +9,8 @@ import talib
 import numpy as np
 import ccxt
 
+import requests
+import json
 import calendar
 import time
 import datetime
@@ -156,14 +158,23 @@ class NoticeStrategy():
         low_prices = [] #最低價
         close_prices = [] #收盤價
         try:
-            # 初始化 Binance 客戶端
-            exchange = ccxt.binanceus({
-                'enableRateLimit': True,  # 啟用速率限制
-            })
-            # 透過Binance 客戶端獲取 K 線數據
-            print(str(self.end_time))
-            klines = exchange.fetch_ohlcv(self.symbol, self.interval, limit = 50)
-            print(str(klines))
+            # # 初始化 Binance 客戶端
+            # exchange = ccxt.binanceus({
+            #     'enableRateLimit': True,  # 啟用速率限制
+            # })
+            # # 透過Binance 客戶端獲取 K 線數據
+            # klines = exchange.fetch_ohlcv(self.symbol, self.interval, limit = 50, params = {'endTime': int(self.end_time)*1000})
+            url = "https://api.binance.us/api/v3/klines"
+            # 设置请求参数
+            params = {
+                "symbol": self.symbol,
+                "interval": self.interval,
+                "limit": 50,
+                "endTime": int(self.end_time)*1000
+            }
+            # 发送 GET 请求
+            response = requests.get(url, params=params).json()
+            klines = json.loads(str(response).replace("'", '"'))
             # 從K線數據中分別取出 最高價, 最低價, 收盤價
             for kline in klines:
                 high_prices.append(float(kline[2]))
