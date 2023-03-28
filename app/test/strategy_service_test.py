@@ -2,7 +2,7 @@ from app.main.util.log_util import LogUtil
 #service
 from app.main.service.strategy_service import StrategyService
 
-class NotifyServiceTest():
+class StrategyServiceTest():
     def __init__(self):
         pass
     

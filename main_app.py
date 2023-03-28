@@ -7,7 +7,7 @@ from threading import Thread
 import time
 
 #test
-from app.test.nofity_service_test import NotifyServiceTest
+from app.test.strategy_service_test import StrategyServiceTest
 
 def bot_polling():
     TelegramBot().bot.polling()
@@ -28,7 +28,7 @@ def main():
     polling_thread.join()
     
 def test():
-    NotifyServiceTest().test()
+    StrategyServiceTest().test()
     
 if __name__ == "__main__":
     if ApplicationConfig.is_test:
