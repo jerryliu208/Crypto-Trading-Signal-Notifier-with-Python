@@ -37,7 +37,7 @@ def start_handler(message):
         
 @bot.message_handler(commands=['signal'])
 def handle_symbol_command(message):
-    reply_msg = "歡迎來到訊號查詢功能！\n請以 '[交易對],[時間週期]' 格式回傳你想查詢訊號的交易對。" + "\n"
+    reply_msg = "歡迎來到訊號查詢功能！\n請以 ' [交易對] , [時間週期] ' 格式回傳你想查詢訊號的交易對。" + "\n"
     reply_msg += "輸入格式的範例 => BTCUSDT, 1d"
     sent_msg = bot.send_message(message.chat.id, reply_msg)
     # 下個步驟讓使用者輸入交易對
