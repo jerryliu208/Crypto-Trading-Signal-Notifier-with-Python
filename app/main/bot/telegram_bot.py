@@ -57,7 +57,7 @@ def get_symbol_signal(message):
     try:
         signal = SignalStrategy(symbol=symbol, interval=interval).signal_analyze_using_kd_macd()
     except Exception as e:
-        bot.send_message(message.chat.id, "分析錯誤，請檢察輸入的交易對或時間週期是否正確。" + str(e) if ApplicationConfig.is_test else "")
+        bot.send_message(message.chat.id, "分析錯誤，請檢察輸入的交易對或時間週期是否正確。" + (str(e) if ApplicationConfig.is_test else ""))
         return
     # 在這裡加入您要查詢的資訊，並回傳給使用者
     reply = "您查詢的：" + symbol + "(" + interval +")" + "，目前訊號為：" + ("適合買入" if signal == 1 else "適合賣出" if signal == -1 else "適合觀望")
