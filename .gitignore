@@ -5,7 +5,7 @@ app/main/config/application_config.py
 app/main/static/*.txt
 
 #log file
-app/main/static/log_file/*
+app/main/static/log_file/*.txt
 
 # Editors
 .vscode/

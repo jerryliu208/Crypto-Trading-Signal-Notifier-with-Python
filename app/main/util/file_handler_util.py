@@ -28,6 +28,8 @@ class FileHandlerUtil():
     def delete_log_files_older_than(date_str):
         log_dir = os.path.join(ApplicationConfig.static_resource_path, "log_file")
         for file_name in os.listdir(log_dir):
+            if file_name.split(".")[1] != "txt":
+                continue
             file_date = datetime.datetime.strptime(file_name.split("_")[0], "%Y-%m-%d")
             if file_date < datetime.datetime.strptime(date_str, "%Y-%m-%d"):
                 file_path = os.path.join(log_dir, file_name)
