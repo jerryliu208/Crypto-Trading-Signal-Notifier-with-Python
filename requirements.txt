@@ -1,4 +1,4 @@
-binance-futures-connector
+ccxt
 ta-lib
 numpy
 pyTelegramBotAPI
