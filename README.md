@@ -24,7 +24,7 @@ This Python project provides a Telegram bot that helps cryptocurrency traders to
 1. Clone this repository to your local machine.
 1. Install the required packages with `pip install -r requirements.txt` or `python3 -m pip install -r requirements.txt`.
 1. In the `application_config.example` file, modify extension to `.py`, and replace all parameters enclosed in double curly braces like `{{parameter}}`.
-1. In the [app/main/static](app/main/static) and [app/main/static/log_file](app/main/static/log_file) directory, rename the `.example` files to `.txt`. You can add the email reveivers in these files. [telegram_developers.txt](app/main/static/telegram_developers.example) file is for development and testing, while the [telegram_subscribers.txt](app/main/static/telegram_subscribers.example) file is for the production environment of subscriber list.
+1. In the [app/main/static](app/main/static) and [app/main/static/log_file](app/main/static/log_file) directory, rename the `.example` files to `.txt`. You can add the nofication reveivers in these files. [telegram_developers.txt](app/main/static/telegram_developers.example) file is for development and testing, while the [telegram_subscribers.txt](app/main/static/telegram_subscribers.example) file is for the production environment of subscriber list.
 
 ### Usage
 
